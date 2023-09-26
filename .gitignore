@@ -1,0 +1,11 @@
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+########################
+#python objects
+__pycache__/
+*.py[cod]
+########################
+#varity_datafiles
+varity2_startfolders/           

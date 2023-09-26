@@ -1,0 +1,15 @@
+{"train_data_path":"/Users/alirezarasoulzadeh/Desktop/reimplemented_varity/varity2_startfolders/varity2_project/data/varity2_train_data_disease_R.csv",
+  "qip_dict":{"core":{"core_clinvar_0":["clinvar_review_star","neg_log_af"],
+                    "core_clinvar_1":["clinvar_review_star","neg_log_af"]},
+
+  "extra":{"extra_clinvar_0_high":["clinvar_review_star","neg_log_af"],
+          "extra_clinvar_1":["clinvar_review_star","neg_log_af"],
+          "extra_gnomad_high":["neg_log_af","gnomAD_exomes_nhomalt"],
+          "extra_gnomad_low":["neg_log_af","gnomAD_exomes_nhomalt"],
+          "extra_hgmd":["neg_log_af"],
+          "extra_humsavar_0_high":["neg_log_af"],
+          "extra_humsavar_0_low":["neg_log_af"],
+          "extra_humsavar_1":["neg_log_af"],
+          "extra_mave_0":["mave_label_confidence","accessibility"],
+          "extra_mave_1":["mave_label_confidence","accessibility"]}
+          }}
