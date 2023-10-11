@@ -1,4 +1,4 @@
-{"train_data_path":"/Users/alirezarasoulzadeh/Desktop/reimplemented_varity/varity2_startfolders/varity2_project/data/varity2_train_data_disease_R.csv",
+{"train_data_path":"/Users/alirezarasoulzadeh/Desktop/reimplemented_varity/varity2_startfolders/varity2_project/data/testing_train_R.csv",
   "list_features":["provean_score","sift_score","evm_epistatic_score","integrated_fitCons_score","LRT_score","GERP++_RS","phyloP30way_mammalian","phastCons30way_mammalian","SiPhy_29way_logOdds","blosum100","in_domain","asa_mean","aa_psipred_E","aa_psipred_H","aa_psipred_C","bsa_max","h_bond_max","salt_bridge_max","disulfide_bond_max","covelent_bond_max","solv_ne_abs_max","mw_delta","pka_delta","pkb_delta","pi_delta","hi_delta","pbr_delta","avbr_delta","vadw_delta","asa_delta","cyclic_delta","charge_delta","positive_delta","negative_delta","hydrophobic_delta","polar_delta","ionizable_delta","aromatic_delta","aliphatic_delta","hbond_delta","sulfur_delta","essential_delta","size_delta"
 ],
   "qip_dict":{"core":{"core_clinvar_0":["clinvar_review_star","neg_log_af"],
