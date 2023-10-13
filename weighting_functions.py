@@ -4,11 +4,11 @@ import numpy as np
 import pandas as pd
 import dataloader_varity as data
 
-
 class Weight():
     def __init__(self,data,qip_dict):
         self.data = data
         self.qip_dict = qip_dict
+        self.weights = None
     
     def _sigmoid(self,x,l,k,x_0):
         '''calculates the value of a sigmoid function parametrized by the following arguments
@@ -19,7 +19,7 @@ class Weight():
         return (l/(1+np.exp(-1*k*(x-x_0))))
 
 
-    #assigns full weight to any core training group
+    #assigns full weight to any core training group, helper function, has a return value does not set attribute directly
     def fw_core_weight_maker(self, data_group, data_subset, qip, weight_function, weight_function_args,additive):
 
         ''' assign weights to one training set and QIP combination as per a pair-unique sigmoid function
@@ -33,7 +33,7 @@ class Weight():
         '''
         len_weight_array = self.data.shape[0]
         if data_group.lower() == "core":
-            return np.ones((len_weight_array,))
+            return np.ones((len_weight_array,)) 
         else:
 
             if additive:
@@ -55,7 +55,6 @@ class Weight():
     def all_weight_maker(self, data_subset, qip, weight_function, weight_function_args,additive):
 
         ''' assign weights to one training set and QIP combination as per a pair-unique sigmoid function
-        train_data -> varity training pandas df
         data_subset -> specific training set e.g. extra_clinvar_0_high, string
         qip -> qip to input into sigmoid function, pandas series
         weight_function -> function to apply for weighting
@@ -94,7 +93,7 @@ class Weight():
                     l = args_dict[f'{data_subset}-{qip}-l']
                     weight_args = (l, k, x0)
                     print(f"{data_group} - {data_subset} - {qip}")
-                    temp_weight_vector = self.fw_core_weight_maker(train_data,data_group,data_subset,qip,self._sigmoid,weight_args)
+                    temp_weight_vector = self.fw_core_weight_maker(data_group,data_subset,qip,self._sigmoid,weight_args,False)
                     #weights_matrix[f"{data_group} - {data_subset} - {qip}"] = temp_weight_vector
                     mul_weight_vector = np.multiply(mul_weight_vector,temp_weight_vector)
                     print(mul_weight_vector.shape)
@@ -116,7 +115,7 @@ class Weight():
                 mul_weight_vector[pos_samples] = mul_weight_vector[pos_samples]*balance_ratio
 
             if np.isclose(mul_weight_vector[neg_samples].sum(),mul_weight_vector[pos_samples].sum()):
-                return mul_weight_vector
+                self.weights = mul_weight_vector
 
             else:
                 raise Exception("Unable to balance weights")
@@ -139,9 +138,9 @@ class Weight():
                     k = args_dict[f'{data_subset}-{qip}-k']
                     l = args_dict[f'{data_subset}-{qip}-l']
                     weight_args = (l, k, x0)
-
-                    temp_weight_vector = self.all_weight_maker(train_data,data_group,data_subset,qip,self._sigmoid,weight_args)
-                    #weights_matrix[f"{data_group} - {data_subset} - {qip}"] = temp_weight_vector
+                    #additive set to false because this function only multiplies weights
+                    temp_weight_vector = self.all_weight_maker(data_subset,qip,self._sigmoid,weight_args,False)
+                    
                     mul_weight_vector = np.multiply(mul_weight_vector,temp_weight_vector)
                     print(mul_weight_vector.shape)
                     #added as column shouldve probably been rows
@@ -161,13 +160,16 @@ class Weight():
                 mul_weight_vector[pos_samples] = mul_weight_vector[pos_samples]*balance_ratio
 
             if np.isclose(mul_weight_vector[neg_samples].sum(),mul_weight_vector[pos_samples].sum()):
-                return mul_weight_vector
+                 self.weights = mul_weight_vector
             else:
                 raise Exception("Unable to balance weights")
 
 
 if __name__ == "__main__":
-    varity_data = data.Dataloader_Varity("/Users/alirezarasoulzadeh/Desktop/reimplemented_varity/config.json")
-    weights = Weight(varity_data.qip_dict)
+    varity_data = data.Dataloader_Varity("/Users/alirezarasoulzadeh/Desktop/reimplemented_varity/test_config.json")
+    weights = Weight(varity_data.data,varity_data.qip_dict)
     args_dict = {}
-    weights.fw_core_multiply_weight_vector_maker(varity_data.data,varity_data.qip_dict,)
+    args_dict = testing.test_hp_space_builder(varity_data.qip_dict)
+    weights.fw_core_multiply_weight_vector_maker(varity_data.data,varity_data.qip_dict,args_dict)
+    print(args_dict)
+    

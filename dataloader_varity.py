@@ -9,15 +9,15 @@ import json
 class Dataloader_Varity():
     '''load training data for varity, verify that quality informative properties '''
 
-    def __init__(self) -> None:
+    def __init__(self,json_file_path: str) -> None:
 
         self.data_path: str = None
         self.config_dict: dict = None
         self.qips: set = set()
         self.feature_set: set = set()
+        self._load_csv(json_file_path)
 
-
-    def load_csv(self,json_file_path: str) -> pd.DataFrame:
+    def _load_csv(self,json_file_path: str) -> None:
         self.config_dict = self._load_config(json_file_path)
         self.data_path = self.config_dict["train_data_path"]
         self.qip_dict = self.config_dict["qip_dict"]
@@ -26,7 +26,7 @@ class Dataloader_Varity():
         if self.data_path == "":
             raise ValueError("empty training data path provided, please provide a valid path")
 
-        #read in data columns for comparisions later on
+        #read in data columns (first row of CSV) for comparisions later on
         data = pd.read_csv(self.data_path,low_memory=False,index_col=False,nrows=1)
         data_fields = set(data.columns)
 
@@ -36,7 +36,6 @@ class Dataloader_Varity():
                 for qip in self.qip_dict[data_group][data_subset]:
                     self.qips.add(qip)
 
-        self.qips = set(self.qips) 
 
         #validate config file, by comparing features and qips with columns provided in training data 
         if self.feature_set.issubset(data_fields) and self.qips.issubset(data_fields):
@@ -45,7 +44,7 @@ class Dataloader_Varity():
         elif (self.feature_set-data_fields):
             raise ValueError(f"feature(s) in configuration file not present in data provided - {self.feature_set-data_fields} missing")
 
-        elif (self.qips-data_fields):
+        elif (self.qips-data_fields):#a-b -> items present in a that are not in b
             raise ValueError(f"QIP in configuration file not present in data provided - {self.qips-data_fields} missing")
 
 
@@ -56,6 +55,5 @@ class Dataloader_Varity():
         return config_dict
 
 if __name__ == "__main__":
-    a = Dataloader_Varity()
-    a.load_csv("/Users/alirezarasoulzadeh/Desktop/reimplemented_varity/test_config.json")
+    a = Dataloader_Varity("/Users/alirezarasoulzadeh/Desktop/reimplemented_varity/test_config.json")
     print(a.data)
