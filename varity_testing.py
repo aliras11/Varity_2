@@ -40,7 +40,7 @@ def qip_dict_subset_extractor(qip_dict: dict) -> list:
 
 #test the function that assigns weights to all instances, regardless of whether they are a core or extra instances
 #currently only supports testing the multiplicative weights
-def test_all_weight_maker(data_subset: str, qip: str, test_data: data.Dataloader_Varity):
+def all_weight_maker_test(data_subset: str, qip: str, test_data: data.Dataloader_Varity) -> None:
     '''test the function that assigns weights to all instances, regardless of whether they are a core or extra instances
     data_subset -> the data subset weights are being calculated for, for example, "core_clinvar_0
     qip -> quality informative property being used to calculate weights
@@ -56,7 +56,7 @@ def test_all_weight_maker(data_subset: str, qip: str, test_data: data.Dataloader
 
 #test the function that assigns weights only to the extra instances, and automatically assigns fullweight to the core instances
 #currently only supports testing the multiplicative weights
-def test_core_fw_weight_maker(data_group: str,data_subset: str, qip: str, test_data: data.Dataloader_Varity):
+def core_fw_weight_maker_test(data_group: str,data_subset: str, qip: str, test_data: data.Dataloader_Varity) -> None:
     '''test the function that assigns weights to extra instances
     data_group -> extra or core
     data_subset -> the data subset weights are being calculated for, for example, "core_clinvar_0
@@ -71,13 +71,34 @@ def test_core_fw_weight_maker(data_group: str,data_subset: str, qip: str, test_d
         assert (results == np.ones(test_data.data.shape[0])).all(), "Core instances should be give full weight"
     
     assert (results<=np.ones(len(results))).all(), "Some weights have values greater than 1!"
-    
+
     if data_group.lower() =='extra':
         assert (weights._sigmoid(test_data.data.loc[(test_data.data["set_name"] == data_subset)][qip].to_numpy(),1,1,0) == results[(test_data.data["set_name"] == data_subset)]).all(), "Weighting function miscalculation occured"
 
 
+def fw_multiply_tester(test_data: data.Dataloader_Varity, qip_dict: dict, args_dict: dict, rebalance: bool) -> None:
+    '''test multiplicative form of final weight vector generating function, where the final form is the 
+    result of the QIP dict provided being fully processed and the weights for each data subset-QIP pair
+    being multiplied yielding a final weight vector
+    test_data -> pandas data frame, accessed as an attribute of Dataloader class
+    qip_dict -> dictionary of quality informative property and data subset pairs 
+    args_dict -> argument dictionary for weighting function, in this case this a stand in for hyperopt search space
+    rebalance -> if weights in function being tested should be rebalanced between positive and negative instances
+    '''
+    weights = Weight(test_data.data, test_data.qip_dict)
+    weights.fw_core_multiply_weight_vector_maker(test_data.data,qip_dict, args_dict, rebalance=True) #returns none
+    results = weights.weights 
+    count_pos = sum(list((test_data.data["label"] == 1)))
+    assert len(results) == test_data.data.shape[0], "Weight array length does not match number of rows in dataset provided"
+    assert count_pos > 0, "Need at least one positive instance to check weight balancing"
+    print(results)
+
+#TODO write a function to verify sigmoid is working as expected
+# TODO write a function to verify the weight assignment for every QIP  
 if __name__ == "__main__":
     train_data = data.Dataloader_Varity("/Users/alirezarasoulzadeh/Desktop/reimplemented_varity/test_config.json")
     print(qip_dict_subset_extractor(train_data.qip_dict))
-    print(test_all_weight_maker('core_clinvar_1','clinvar_review_star',train_data))
-    print(test_core_fw_weight_maker('extra','extra_gnomad_high','neg_log_af',train_data))
+    print(all_weight_maker_test('core_clinvar_1','clinvar_review_star',train_data))
+    print(core_fw_weight_maker_test('extra','extra_gnomad_high','neg_log_af',train_data))
+    args_dict = test_hp_space_builder(train_data.qip_dict)
+    fw_multiply_tester(train_data,train_data.qip_dict,args_dict ,True)

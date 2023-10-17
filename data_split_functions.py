@@ -21,7 +21,7 @@ def varity_objective_CV(hyperopt_tuning_dict):
   #varity_r_data_unsplit_features_only = varity_r_data_unsplit_labelled[list_features].iloc[]
   #labels = varity_r_data_unsplit_labelled["label"]
 
-  weights = weight_vector_maker(dataset,qip_dict,hyperopt_tuning_dict)
+  weights = (dataset,qip_dict,hyperopt_tuning_dict)
   for train, test in kf.split(varity_r_data_unsplit_labelled):
     print(type(train))
     weights_train = weights[train]

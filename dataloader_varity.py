@@ -47,7 +47,7 @@ class Dataloader_Varity():
         elif (self.qips-data_fields):#a-b -> items present in a that are not in b
             raise ValueError(f"QIP in configuration file not present in data provided - {self.qips-data_fields} missing")
 
-
+    #note we do not validate the actual training CSV to ensure all the subsets mentioned in the QIP dictionary are present in the training data. 
 
     def _load_config(self,json_file_path: str) -> dict:
         with open(json_file_path,'r') as f:
