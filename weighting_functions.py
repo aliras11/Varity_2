@@ -95,11 +95,12 @@ class Weight():
                     k = args_dict[f'{data_subset}-{qip}-k']
                     l = args_dict[f'{data_subset}-{qip}-l']
                     weight_args = (l, k, x0)
-                    print(f"{data_group} - {data_subset} - {qip}")
+                    #print(f"{data_group} - {data_subset} - {qip}")
+                    #print(data_group)
                     temp_weight_vector = self.fw_core_weight_maker(data_group,data_subset,qip,self.sigmoid,weight_args,False)
                     #weights_matrix[f"{data_group} - {data_subset} - {qip}"] = temp_weight_vector
                     mul_weight_vector = np.multiply(mul_weight_vector,temp_weight_vector)
-                    print(mul_weight_vector.shape)
+                    #print(mul_weight_vector.shape)
                     #added as column shouldve probably been rows
         self.weights = mul_weight_vector
         self.weight_geo_mean_apply()
@@ -191,9 +192,9 @@ class Weight():
         if self.weights.any: #check if a weight array exists
             for data_subset in count_qip_dict:
                 subset_mask = (self.data["set_name"] == data_subset)
-                print(self.weights[subset_mask])
+                #print(self.weights[subset_mask])
                 self.weights[subset_mask] = self.geo_mean(self.weights[subset_mask],count_qip_dict[data_subset])
-                print(self.weights[subset_mask])
+                #print(self.weights[subset_mask])
         else:
             raise Exception("No weights calculated")
 
@@ -202,7 +203,7 @@ if __name__ == "__main__":
     weights = Weight(varity_data.data,varity_data.qip_dict)
     from varity_testing import test_hp_space_builder
     args = test_hp_space_builder(varity_data.qip_dict)
-    weights.fw_core_multiply_weight_vector_maker(varity_data.data, varity_data.qip_dict,args,True)
+    weights.fw_core_multiply_weight_vector_maker(varity_data.data, varity_data.qip_dict,args,False)
     #args_dict = {}
     #weights.fw_core_multiply_weight_vector_maker(varity_data.data,varity_data.qip_dict,args_dict)
    # print(args_dict)

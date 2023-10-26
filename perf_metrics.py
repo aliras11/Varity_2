@@ -30,11 +30,14 @@ def hist_plot(data: np.ndarray):
     
     vline = ax1.axvline(-2.5, ls='-', color='r', lw=1, zorder=10)
     precision, recall, thresholds = skk.precision_recall_curve((data[:,1]==1),data[:,0])
-    precision
+    precision = np.flip(precision)
+    recall = np.flip(recall)
+    thresholds = np.flip(thresholds)
     line, = ax2.plot(recall[0],precision[0])
 
     def animate(i):
         line.set_xdata(recall[:i])
+        print(recall[:i])
         line.set_ydata(precision[:i])  # update the data.
         vline.set_xdata(thresholds[i])
         return vline, line,

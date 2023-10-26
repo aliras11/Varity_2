@@ -5,6 +5,7 @@ import pandas as pd
 from hyperopt import fmin, tpe, hp, STATUS_OK, Trials
 import dataloader_varity as data
 from weighting_functions import Weight
+import math 
 
 
 def test_hp_space_builder(qip_dict: dict) -> dict:
@@ -47,10 +48,10 @@ def all_weight_maker_test(data_subset: str, qip: str, test_data: data.Dataloader
     test_data -> loaded and processed training data'''
     
     weights = Weight(test_data.data, test_data.qip_dict)
-    results =  weights.all_weight_maker(data_subset,qip,weights._sigmoid,(1,1,0),False)
+    results =  weights.all_weight_maker(data_subset,qip,weights.sigmoid,(2,1,5),False)
     assert len(results) == test_data.data.shape[0], "Weight array length does not match number of rows in dataset provided"
     assert (results<=np.ones(len(results))).all(), "Some weights have values greater than 1!"
-    assert (weights._sigmoid(test_data.data.loc[(test_data.data["set_name"] == data_subset)][qip].to_numpy(),1,1,0) == results[(test_data.data["set_name"] == data_subset)]).all(), "Weighting function miscalculation occured"
+    assert (weights.sigmoid(test_data.data.loc[(test_data.data["set_name"] == data_subset)][qip].to_numpy(),2,1,5) == results[(test_data.data["set_name"] == data_subset)]).all(), "Weighting function miscalculation occured"
 
 
 
@@ -63,7 +64,7 @@ def core_fw_weight_maker_test(data_group: str,data_subset: str, qip: str, test_d
     qip -> quality informative property being used to calculate weights
     test_data -> loaded and processed training data'''
     weights = Weight(test_data.data, test_data.qip_dict)
-    results =  weights.fw_core_weight_maker(data_group,data_subset,qip,weights._sigmoid,(1,1,0),False)
+    results =  weights.fw_core_weight_maker(data_group,data_subset,qip,weights.sigmoid,(1,1,0),False)
 
     assert len(results) == test_data.data.shape[0], "Weight array length does not match number of rows in dataset provided"
 
@@ -73,7 +74,7 @@ def core_fw_weight_maker_test(data_group: str,data_subset: str, qip: str, test_d
     assert (results<=np.ones(len(results))).all(), "Some weights have values greater than 1!"
 
     if data_group.lower() =='extra':
-        assert (weights._sigmoid(test_data.data.loc[(test_data.data["set_name"] == data_subset)][qip].to_numpy(),1,1,0) == results[(test_data.data["set_name"] == data_subset)]).all(), "Weighting function miscalculation occured"
+        assert (weights.sigmoid(test_data.data.loc[(test_data.data["set_name"] == data_subset)][qip].to_numpy(),1,1,0) == results[(test_data.data["set_name"] == data_subset)]).all(), "Weighting function miscalculation occured"
 
 
 def fw_multiply_tester(test_data: data.Dataloader_Varity, qip_dict: dict, args_dict: dict, rebalance: bool) -> None:
@@ -91,6 +92,8 @@ def fw_multiply_tester(test_data: data.Dataloader_Varity, qip_dict: dict, args_d
     count_pos = sum(list((test_data.data["label"] == 1)))
     assert len(results) == test_data.data.shape[0], "Weight array length does not match number of rows in dataset provided"
     assert count_pos > 0, "Need at least one positive instance to check weight balancing"
+    print(f'{count_pos} number of positive instances in data')
+    assert math.isclose(results[(test_data.data["label"] == 1)].sum(),results[(test_data.data["label"] == 0)].sum())
     print(results)
 
 #TODO write a function to verify sigmoid is working as expected
