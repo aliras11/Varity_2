@@ -39,7 +39,7 @@ def core_targeted_CV(indices_and_params:dict):
     varity_r_data_unsplit_labelled = varity_data.data[varity_featurelist+['label']]
     
     weights = wf.Weight(varity_data.data,varity_data.qip_dict)
-    weights.fw_core_multiply_weight_vector_maker(varity_data.data, varity_data.qip_dict,indices_and_params,True)
+    weights.fw_core_multiply_weight_vector_maker(varity_data.data, varity_data.qip_dict,indices_and_params,False)
 
     #get core set indices for splitting only core instances
     indices_core_set = core_set_finder(varity_data)
@@ -69,4 +69,4 @@ def core_targeted_CV(indices_and_params:dict):
         errors_list.append(error)
 
     print(errors_list)
-    return {'loss':-1*mean(errors_list), 'status':STATUS_OK, "innerloss":5.5}
+    return {'loss':-1*mean(errors_list), 'status':STATUS_OK}

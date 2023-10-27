@@ -75,7 +75,6 @@ def cv_mean_testset(indices_and_params:dict):
     #labels = varity_r_data_unsplit_labelled["label"]
     
     weights = wf.Weight(varity_data.data,varity_data.qip_dict)
-    print(indices_and_params)
     weights.fw_core_multiply_weight_vector_maker(varity_data.data, varity_data.qip_dict,indices_and_params,True)
     for train, test in kf.split(varity_r_data_unsplit_labelled):
         print(type(train))
@@ -144,12 +143,11 @@ def core_targeted_CV(indices_and_params:dict):
         test_indices = indices_core_set[test]
         train_indices = indices_core_set[train]
         #np.in1d compares two arrays and returns a boolean with anywhere elements in arg2 appear in arg1
-        train_indices = np.nonzero(~np.in1d(dummy_index,train_indices))[0]
+        #a[np.in1d(a,b,invert=True)] gives you all elements in a that are NOT in b
+        train_indices = dummy_index[np.in1d(dummy_index,test_indices,invert=True)]
         weights_train = weights.weights[train_indices]
         weights_test = weights.weights[test_indices]
-        print(weights.weights.shape)
-        print(varity_data.data.shape)
-        #print(weights_train.shape)
+  
         train = varity_r_data_unsplit_labelled.iloc[train_indices]
         test = varity_r_data_unsplit_labelled.iloc[test_indices]
 
