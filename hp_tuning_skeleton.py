@@ -37,6 +37,9 @@ def aubprc(y_true,predictions,prior):
       prior -> float calculated per fold of test set, ratio of positive to negative labels p(Y=1)
   '''
   auprc_average_precision = smm.average_precision_score(y_true, predictions)
+  if prior == 0:
+    print("zero prior detected") #TODO delete me 
+    return auprc_average_precision
   aubprc = (auprc_average_precision * (1-prior))/((auprc_average_precision * (1-prior))+((1-auprc_average_precision)*prior))
   return aubprc
 
