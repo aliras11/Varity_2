@@ -1,8 +1,5 @@
 '''a library of functions used in the Varity framework for weighting instances in the XGBoost algorithm'''
 
-from itertools import count
-from multiprocessing import Value
-from operator import sub
 import numpy as np
 import pandas as pd
 import dataloader_varity as data

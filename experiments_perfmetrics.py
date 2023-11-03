@@ -37,7 +37,6 @@ def hist_plot(data: np.ndarray):
 
     def animate(i):
         line.set_xdata(recall[:i])
-        print(recall[:i])
         line.set_ydata(precision[:i])  # update the data.
         vline.set_xdata(thresholds[i])
         return vline, line,

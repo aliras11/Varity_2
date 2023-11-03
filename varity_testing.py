@@ -93,8 +93,7 @@ def fw_multiply_tester(test_data: data.Dataloader_Varity, qip_dict: dict, args_d
     assert len(results) == test_data.data.shape[0], "Weight array length does not match number of rows in dataset provided"
     assert count_pos > 0, "Need at least one positive instance to check weight balancing"
     print(f'{count_pos} number of positive instances in data')
-    assert math.isclose(results[(test_data.data["label"] == 1)].sum(),results[(test_data.data["label"] == 0)].sum())
-    print(results)
+    assert math.isclose(results[(test_data.data["label"] == 1)].sum(),results[(test_data.data["label"] == 0)].sum()), "weights not balanced"
 
 #TODO write a function to verify sigmoid is working as expected
 # TODO write a function to verify the weight assignment for every QIP  

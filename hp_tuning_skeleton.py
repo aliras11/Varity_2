@@ -105,10 +105,10 @@ def nested_cv_():
     '''
     pass
 
-def core_set_finder(data: data.Dataloader_Varity)->np.array:
+def core_set_finder(data: data.Dataloader_Varity) -> np.ndarray[int]:
     '''data -> Dataloader_Varity instance 
-        this function returns a numpy array that contains all of the indices of core set members'''
-    qip_dict = varity_data.qip_dict
+        this function returns a numpy array that contains all of the integer indices of core set members'''
+    qip_dict = data.qip_dict
     core_sets = qip_dict['core'].keys()
     index_array = np.array([],dtype=int)
     for core_set in core_sets:
@@ -164,7 +164,7 @@ def core_targeted_CV(indices_and_params:dict):
         #print(prior)
         errors_list.append(error)
 
-    print(errors_list)
+    
     return {'loss':-1*mean(errors_list), 'status':STATUS_OK}
 
 if __name__ == "__main__":

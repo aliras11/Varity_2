@@ -7,7 +7,8 @@ import json
 
 
 class Dataloader_Varity():
-    '''load training data for varity, verify that quality informative properties '''
+    '''load training data for varity, verify that quality informative properties and features are
+    present'''
 
     def __init__(self,json_file_path: str) -> None:
 
