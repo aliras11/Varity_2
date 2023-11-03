@@ -152,6 +152,8 @@ class Weight():
         #balancing performed here
             neg_samples = (train_data["label"] == 0)
             pos_samples = (train_data["label"] == 1)
+            #TODO delete me 
+            print(f'{neg_samples.shape[0]}_{pos_samples.shape[0]}_negative count to positive count')
 
             if round(mul_weight_vector[neg_samples].sum(),1) > round(mul_weight_vector[pos_samples].sum(),1):
 
