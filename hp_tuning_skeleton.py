@@ -21,10 +21,14 @@ def prior_calc(data_frame):
     freq_dict = data_frame["label"].value_counts().to_dict()
     if 1 in freq_dict.keys() and 0 in freq_dict.keys():
         negative = freq_dict[0]
-        positive = freq_dict[1] #
-        prior = positive/negative
-    else:
-        prior = 0 #prior if there are no positive cases
+        positive = freq_dict[1]
+        prior = positive/(positive+negative) #calculate prior probability of pathogeneticity 
+
+    elif 1 in freq_dict.keys() and 0 not in freq_dict.keys(): #if there are only pathogenic/positive labels 
+        prior = 1 #prior if there are no positive cases
+
+    else: #if there are no pathogenic/positive labels 
+        prior = 0
     
     return prior
 
@@ -37,9 +41,6 @@ def aubprc(y_true,predictions,prior):
       prior -> float calculated per fold of test set, ratio of positive to negative labels p(Y=1)
   '''
   auprc_average_precision = smm.average_precision_score(y_true, predictions)
-  if prior == 0:
-    print("zero prior detected") #TODO delete me 
-    return auprc_average_precision
   aubprc = (auprc_average_precision * (1-prior))/((auprc_average_precision * (1-prior))+((1-auprc_average_precision)*prior))
   return aubprc
 
@@ -69,7 +70,7 @@ def cv_mean_testset(indices_and_params:dict):
         all of data gets to be a test set once'''
     varity_data = indices_and_params["varity_data"]
     errors_list = []
-    kf = skm.KFold(n_splits=10)
+    kf = skm.KFold(n_splits=10, shuffle=True)
     parameter_dict = {"eta":indices_and_params['eta'], "gamma": indices_and_params['gamma'], "max_depth":indices_and_params['max_depth'], "min_child_weight":indices_and_params['min_child_weight'],
     "subsample":indices_and_params['subsample'], "colsample_bytree":indices_and_params['colsample_bytree'],"tree_method":'exact',"objective":"reg:logistic"}
     varity_featurelist = list(varity_data.feature_set)
@@ -129,7 +130,7 @@ def core_targeted_CV(indices_and_params:dict):
     #varity_dataloader instance from param dict
     varity_data = indices_and_params["varity_data"]
     errors_list = []
-    kf = skm.KFold(n_splits=5)
+    kf = skm.KFold(n_splits=5, shuffle=True)
     parameter_dict = {"eta":indices_and_params['eta'], "gamma": indices_and_params['gamma'], "max_depth":indices_and_params['max_depth'], "min_child_weight":indices_and_params['min_child_weight'],
     "subsample":indices_and_params['subsample'], "colsample_bytree":indices_and_params['colsample_bytree'],"tree_method":'exact',"objective":"reg:logistic"}
     varity_featurelist = list(varity_data.feature_set)
@@ -143,7 +144,7 @@ def core_targeted_CV(indices_and_params:dict):
     #create an array with integers ranging from 0 to num rows in training data so that we can create a train set  
     dummy_index = np.arange(varity_data.data.shape[0])
     for train, test in kf.split(indices_core_set):
-        test_indices = indices_core_set[test]
+        test_indices = indices_core_set[test] #get indices based on actual training data, train and test are indices into the core set only 
         train_indices = indices_core_set[train]
         #np.in1d compares two arrays and returns a boolean with anywhere elements in arg2 appear in arg1
         #a[np.in1d(a,b,invert=True)] gives you all elements in a that are NOT in b
