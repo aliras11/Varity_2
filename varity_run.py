@@ -28,7 +28,7 @@ def main(config_path: str, tuning_rounds:str) -> int:
     space = hp_dict,
     algo=tpe.suggest,
     max_evals=int(tuning_rounds), trials=trials)
-    p = cp/Path(f"trial_object_hp_tuning_{current_time}")
+    p = cp/Path(f"trial_object_hp_tuning_{current_time}.pkl")
     with p.open(mode="wb") as fp:
         pickle.dump(trials, fp)
 
