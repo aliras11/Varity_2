@@ -164,9 +164,9 @@ def core_targeted_CV(indices_and_params:dict):
     weights = wf.Weight(varity_data.data,varity_data.qip_dict)
     if weight_func == 'linear':
         weight_func_exec = weights.linear
-    if weight_func == 'sigmoid':
+    elif weight_func == 'sigmoid':
         weight_func_exec = weights.sigmoid
-    if weight_func == 'direct':
+    elif weight_func == 'direct':
         weight_func_exec= weights.direct
     else: raise Exception("no weight function provided")
 
