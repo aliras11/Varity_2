@@ -29,7 +29,7 @@ def main(action,config_path: str, tuning_rounds:str,weight_function:str) -> int:
         space = hp_dict,
         algo=tpe.suggest,
         max_evals=int(tuning_rounds), trials=trials)
-        p = cp/Path(f"trial_object_hp_tuning_{current_time}.pkl")
+        p = cp/Path(f"{weight_function}_trial_object_{action}_{current_time}.pkl")
         with p.open(mode="wb") as fp:
             pickle.dump(trials, fp)
     if action.lower() == 'inference':
