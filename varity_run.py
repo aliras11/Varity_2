@@ -12,6 +12,7 @@ import argparse
 
 def main(action,config_path: str, tuning_rounds:str,weight_function:str) -> int:
     current_time = datetime.datetime.now()
+    current_time = str(current_time).replace(" ","_")
     if action.lower() == 'hp_tuning':
         '''executes a hyperparameter tuning session
             1. create and instantiate a varity dataloader instance 
