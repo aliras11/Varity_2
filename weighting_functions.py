@@ -18,6 +18,36 @@ class Weight():
         x_0 -> right/left translation of sigmoid function'''
         return (l/(1+np.exp(-1*k*(x-x_0))))
 
+    def linear(self,x,m,b):
+        '''linear weighting function with maximum clipped at 1
+        argmument names based y = mx +b convention
+        x -> pandas column/series of quality informative properties'''
+        weight = np.multiply(x,m)
+        weight += float(b)
+        weight = np.clip(weight,0,1)
+        return weight
+    
+    def  weight_arg_extractor(self,args_dict,weight_function,data_subset,qip):
+        '''takes in a hyperopt space and extracts the arguments for the relevant weighting function,
+        recall different weighting functions are parametrized differently. User must make sure the args_dict has 
+        the correct values for the given weight function 
+        args_dict -> hyperopt space dict 
+        weight_function -> weight function (callable)
+        data_subset -> named part of data, found in second level of qip dict
+        qip -> quality informative property'''
+
+        if weight_function.__name__ == 'linear': #extract name of weight function
+            return (args_dict[f'{data_subset}-{qip}-m'],args_dict[f'{data_subset}-{qip}-b'])
+
+        if weight_function.__name__ == 'sigmoid':
+            return (args_dict[f'{data_subset}-{qip}-l'],
+            args_dict[f'{data_subset}-{qip}-k'],args_dict[f'{data_subset}-{qip}-x_0'])
+                    
+        if weight_function.__name__ == 'direct':
+            return args_dict[f'{data_subset}']
+
+
+
 
     #assigns full weight to any core training group, helper function, has a return value does not set attribute directly
     def fw_core_weight_maker(self, data_group, data_subset, qip, weight_function, weight_function_args,additive):
@@ -75,26 +105,23 @@ class Weight():
         return weight_array
     
     #runs the fw_core_weight_maker function for assigning weights
-    def fw_core_multiply_weight_vector_maker(self,train_data,qip_dict, args_dict, rebalance=True):
+    def fw_core_multiply_weight_vector_maker(self,train_data,qip_dict,args_dict,weight_function ,rebalance=True):
 
         '''take in a quality informative property dictionary (provided as a configuration json file) and assign weights to each
             feature QIP combination, returning a 1D numpy array representing weights
             train_data -> varity training pandas df
             qip_dict -> dictionary relating data subsets to QIPs
-            args_dict -> hyperopt space dict from which we extract QIP specific sigmoid parameters'''
+            args_dict -> hyperopt space dict from which we extract QIP specific sigmoid parameters
+            weight_function -> function to use for calculating weights'''
 
         mul_weight_vector = np.ones((train_data.shape[0],))
         #weights_matrix = pd.DataFrame()
         for data_group in qip_dict:
             for data_subset in qip_dict[data_group]:
                 for qip in qip_dict[data_group][data_subset]:
-                    x0 = args_dict[f'{data_subset}-{qip}-x_0']
-                    k = args_dict[f'{data_subset}-{qip}-k']
-                    l = args_dict[f'{data_subset}-{qip}-l']
-                    weight_args = (l, k, x0)
-                    #print(f"{data_group} - {data_subset} - {qip}")
-                    #print(data_group)
-                    temp_weight_vector = self.fw_core_weight_maker(data_group,data_subset,qip,self.sigmoid,weight_args,False)
+
+                    weight_args = self.weight_arg_extractor(args_dict,weight_function,data_subset,qip)
+                    temp_weight_vector = self.fw_core_weight_maker(data_group,data_subset,qip,weight_function,weight_args,False)
                     #weights_matrix[f"{data_group} - {data_subset} - {qip}"] = temp_weight_vector
                     mul_weight_vector = np.multiply(mul_weight_vector,temp_weight_vector)
                     #print(mul_weight_vector.shape)
@@ -125,7 +152,7 @@ class Weight():
 
     #runs the all_weight_maker function for assigning weights
     def aw_multiply_weight_vector_maker(self,train_data,qip_dict, args_dict, rebalance=True):
-        
+        #doesnt support other weighting functions yet 
         '''take in a quality informative property dictionary (provided as a configuration json file) and assign weights to each
             feature QIP combination, returning a 1D numpy array representing weights
             train_data -> varity training pandas df
@@ -201,8 +228,8 @@ if __name__ == "__main__":
     varity_data = data.Dataloader_Varity("/Users/alirezarasoulzadeh/Desktop/reimplemented_varity/test_config.json")
     weights = Weight(varity_data.data,varity_data.qip_dict)
     from varity_testing import test_hp_space_builder
-    args = test_hp_space_builder(varity_data.qip_dict)
-    weights.fw_core_multiply_weight_vector_maker(varity_data.data, varity_data.qip_dict,args,False)
+    args = test_hp_space_builder(varity_data.qip_dict,'linear')
+    weights.fw_core_multiply_weight_vector_maker(varity_data.data, varity_data.qip_dict,args,weights.linear,False)
     #args_dict = {}
     #weights.fw_core_multiply_weight_vector_maker(varity_data.data,varity_data.qip_dict,args_dict)
    # print(args_dict)

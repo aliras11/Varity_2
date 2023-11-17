@@ -44,7 +44,7 @@ def aubprc(y_true,predictions,prior):
   aubprc = (auprc_average_precision * (1-prior))/((auprc_average_precision * (1-prior))+((1-auprc_average_precision)*prior))
   return aubprc
 
-def hp_space_builder_varity(qip_dict):
+def hp_space_builder_varity(qip_dict:dict, weight_function:str) -> dict:
   space = {
         'num_boost_round':hp.choice('num_boost_round', np.arange(2, 10, dtype=int)),
         'eta': hp.quniform('eta', 0.025, 0.5, 0.025),
@@ -54,14 +54,23 @@ def hp_space_builder_varity(qip_dict):
         'min_child_weight': hp.quniform('min_child_weight', 1, 6, 1),
         'subsample': hp.quniform('subsample', 0.5, 1, 0.05),
         'gamma': hp.quniform('gamma', 0.5, 1, 0.05),
-        'colsample_bytree': hp.quniform('colsample_bytree', 0, 1, 0.1)
+        'colsample_bytree': hp.quniform('colsample_bytree', 0, 1, 0.1),
+        'weighting_function':weight_function
     }
-  for data_group in qip_dict:
-    for data_subset in qip_dict[data_group]:
-      for qip in qip_dict[data_group][data_subset]:
-        space.update({f'{data_subset}-{qip}-l':hp.uniform(f'{data_subset}-{qip}-l',0,1)})
-        space.update({f'{data_subset}-{qip}-k':hp.uniform(f'{data_subset}-{qip}-k',0,10)})
-        space.update({f'{data_subset}-{qip}-x_0':hp.uniform(f'{data_subset}-{qip}-x_0',0,10)})
+  if weight_function == 'sigmoid':
+    for data_group in qip_dict:
+        for data_subset in qip_dict[data_group]:
+            for qip in qip_dict[data_group][data_subset]:
+                space.update({f'{data_subset}-{qip}-l':hp.uniform(f'{data_subset}-{qip}-l',0,1)})
+                space.update({f'{data_subset}-{qip}-k':hp.uniform(f'{data_subset}-{qip}-k',0,10)})
+                space.update({f'{data_subset}-{qip}-x_0':hp.uniform(f'{data_subset}-{qip}-x_0',0,10)})
+
+  if weight_function == 'linear':
+    for data_group in qip_dict:
+        for data_subset in qip_dict[data_group]:
+            for qip in qip_dict[data_group][data_subset]:
+                space.update({f'{data_subset}-{qip}-m':hp.uniform(f'{data_subset}-{qip}-m',1,50)})
+                space.update({f'{data_subset}-{qip}-b':hp.uniform(f'{data_subset}-{qip}-b',0,1)})
   return space
 
 #needs to be called inside a fmin function
@@ -69,6 +78,7 @@ def cv_mean_testset(indices_and_params:dict):
     '''vanilla cross validation with the loss returned being an average over all test sets
         all of data gets to be a test set once'''
     varity_data = indices_and_params["varity_data"]
+    weight_func = indices_and_params["weighting_function"]
     errors_list = []
     kf = skm.KFold(n_splits=10, shuffle=True)
     parameter_dict = {"eta":indices_and_params['eta'], "gamma": indices_and_params['gamma'], "max_depth":indices_and_params['max_depth'], "min_child_weight":indices_and_params['min_child_weight'],
@@ -79,7 +89,13 @@ def cv_mean_testset(indices_and_params:dict):
     #labels = varity_r_data_unsplit_labelled["label"]
     
     weights = wf.Weight(varity_data.data,varity_data.qip_dict)
-    weights.fw_core_multiply_weight_vector_maker(varity_data.data, varity_data.qip_dict,indices_and_params,True)
+    if weight_func == 'linear':
+        weight_func = weights.linear
+    if weight_func == 'sigmoid':
+        weight_func = weights.sigmoid
+    if weight_func == 'direct':
+        raise
+    weights.fw_core_multiply_weight_vector_maker(varity_data.data, varity_data.qip_dict,indices_and_params,weight_func,True)
     for train, test in kf.split(varity_r_data_unsplit_labelled):
         print(type(train))
         weights_train = weights.weights[train]
@@ -129,6 +145,9 @@ def core_targeted_CV(indices_and_params:dict):
     
     #varity_dataloader instance from param dict
     varity_data = indices_and_params["varity_data"]
+    weight_func = indices_and_params["weighting_function"]
+    
+
     errors_list = []
     kf = skm.KFold(n_splits=5, shuffle=True)
     parameter_dict = {"eta":indices_and_params['eta'], "gamma": indices_and_params['gamma'], "max_depth":indices_and_params['max_depth'], "min_child_weight":indices_and_params['min_child_weight'],
@@ -137,7 +156,13 @@ def core_targeted_CV(indices_and_params:dict):
     varity_r_data_unsplit_labelled = varity_data.data[varity_featurelist+['label']]
     
     weights = wf.Weight(varity_data.data,varity_data.qip_dict)
-    weights.fw_core_multiply_weight_vector_maker(varity_data.data, varity_data.qip_dict,indices_and_params,True)
+    if weight_func == 'linear':
+        weight_func = weights.linear
+    if weight_func == 'sigmoid':
+        weight_func = weights.sigmoid
+    if weight_func == 'direct':
+        raise
+    weights.fw_core_multiply_weight_vector_maker(varity_data.data, varity_data.qip_dict,indices_and_params,weight_func,True)
 
     #get core set indices for splitting only core instances
     indices_core_set = core_set_finder(varity_data)
@@ -173,7 +198,7 @@ def core_targeted_CV(indices_and_params:dict):
 
 if __name__ == "__main__":
     varity_data = data.Dataloader_Varity("/Users/alirezarasoulzadeh/Desktop/reimplemented_varity/test_config.json")
-    hp_dict = hp_space_builder_varity(varity_data.qip_dict)
+    hp_dict = hp_space_builder_varity(varity_data.qip_dict,'linear')
     trials = Trials()
     hp_dict.update({"varity_data":varity_data})
     best = fmin(core_targeted_CV,

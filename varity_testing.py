@@ -8,7 +8,7 @@ from weighting_functions import Weight
 import math 
 
 
-def test_hp_space_builder(qip_dict: dict) -> dict:
+def test_hp_space_builder(qip_dict: dict,weight_function: str) -> dict:
     '''used to generate test hyperparameter dictionaries that mimic hyperopt search spaces
     without the need to do any sampling which would introduce stochasticity. Values are hardcoded '''
     space = {
@@ -20,12 +20,20 @@ def test_hp_space_builder(qip_dict: dict) -> dict:
         'gamma': 0.5,
         'colsample_bytree': 0.5
     }
-    for data_group in qip_dict:
-        for data_subset in qip_dict[data_group]:
-            for qip in qip_dict[data_group][data_subset]:
-                space.update({f'{data_subset}-{qip}-l':1})
-                space.update({f'{data_subset}-{qip}-k':1})
-                space.update({f'{data_subset}-{qip}-x_0':0})
+    if weight_function == 'sigmoid':
+        for data_group in qip_dict:
+            for data_subset in qip_dict[data_group]:
+                for qip in qip_dict[data_group][data_subset]:
+                    space.update({f'{data_subset}-{qip}-l':1})
+                    space.update({f'{data_subset}-{qip}-k':1})
+                    space.update({f'{data_subset}-{qip}-x_0':0})
+    if weight_function == 'linear':
+        for data_group in qip_dict:
+            for data_subset in qip_dict[data_group]:
+                for qip in qip_dict[data_group][data_subset]:
+                    space.update({f'{data_subset}-{qip}-m':0.9})
+                    space.update({f'{data_subset}-{qip}-b':0.5})
+
     return space
 
 #helper function that returns data subsets associated with a qip_dict,
