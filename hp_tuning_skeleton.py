@@ -71,6 +71,11 @@ def hp_space_builder_varity(qip_dict:dict, weight_function:str) -> dict:
             for qip in qip_dict[data_group][data_subset]:
                 space.update({f'{data_subset}-{qip}-m':hp.uniform(f'{data_subset}-{qip}-m',1,50)})
                 space.update({f'{data_subset}-{qip}-b':hp.uniform(f'{data_subset}-{qip}-b',0,1)})
+    
+    if weight_function == 'direct':
+        for data_group in qip_dict:
+            for data_subset in qip_dict[data_group]:
+                space.update({f'{data_subset}-weight':hp.uniform(f'{data_subset}-weight',0,1)})
   return space
 
 #needs to be called inside a fmin function

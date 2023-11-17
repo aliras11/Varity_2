@@ -27,6 +27,13 @@ class Weight():
         weight = np.clip(weight,0,1)
         return weight
     
+    def direct(self,x,weight,throwaway):
+        '''allows bayesian optmizing to directly choose the weight for each datasubet
+        x -> pandas column/series, this argument is needed to make the .apply method to work even though it is not needed
+        weight -> weight value assigned'''
+        weight = np.multiply(x,0)+weight
+        return weight
+
     def  weight_arg_extractor(self,args_dict,weight_function,data_subset,qip):
         '''takes in a hyperopt space and extracts the arguments for the relevant weighting function,
         recall different weighting functions are parametrized differently. User must make sure the args_dict has 
@@ -44,7 +51,7 @@ class Weight():
             args_dict[f'{data_subset}-{qip}-k'],args_dict[f'{data_subset}-{qip}-x_0'])
                     
         if weight_function.__name__ == 'direct':
-            return args_dict[f'{data_subset}']
+            return (args_dict[f'{data_subset}-weight'],0)
 
 
 
@@ -228,8 +235,8 @@ if __name__ == "__main__":
     varity_data = data.Dataloader_Varity("/Users/alirezarasoulzadeh/Desktop/reimplemented_varity/test_config.json")
     weights = Weight(varity_data.data,varity_data.qip_dict)
     from varity_testing import test_hp_space_builder
-    args = test_hp_space_builder(varity_data.qip_dict,'linear')
-    weights.fw_core_multiply_weight_vector_maker(varity_data.data, varity_data.qip_dict,args,weights.linear,False)
+    args = test_hp_space_builder(varity_data.qip_dict,'direct')
+    weights.fw_core_multiply_weight_vector_maker(varity_data.data, varity_data.qip_dict,args,weights.direct,False)
     #args_dict = {}
     #weights.fw_core_multiply_weight_vector_maker(varity_data.data,varity_data.qip_dict,args_dict)
    # print(args_dict)

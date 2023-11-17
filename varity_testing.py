@@ -33,7 +33,11 @@ def test_hp_space_builder(qip_dict: dict,weight_function: str) -> dict:
                 for qip in qip_dict[data_group][data_subset]:
                     space.update({f'{data_subset}-{qip}-m':0.9})
                     space.update({f'{data_subset}-{qip}-b':0.5})
-
+    
+    if weight_function == 'direct':
+        for data_group in qip_dict:
+            for data_subset in qip_dict[data_group]:
+                space.update({f'{data_subset}-weight':0.2})
     return space
 
 #helper function that returns data subsets associated with a qip_dict,
