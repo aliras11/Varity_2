@@ -71,11 +71,11 @@ def hp_space_builder_varity(qip_dict:dict, weight_function:str) -> dict:
             for qip in qip_dict[data_group][data_subset]:
                 space.update({f'{data_subset}-{qip}-m':hp.uniform(f'{data_subset}-{qip}-m',1,50)})
                 space.update({f'{data_subset}-{qip}-b':hp.uniform(f'{data_subset}-{qip}-b',0,1)})
-    
-    if weight_function == 'direct':
-        for data_group in qip_dict:
-            for data_subset in qip_dict[data_group]:
-                space.update({f'{data_subset}-weight':hp.uniform(f'{data_subset}-weight',0,1)})
+
+  if weight_function == 'direct':
+    for data_group in qip_dict:
+        for data_subset in qip_dict[data_group]:
+            space.update({f'{data_subset}-weight':hp.uniform(f'{data_subset}-weight',0,1)})
   return space
 
 #needs to be called inside a fmin function
@@ -95,12 +95,13 @@ def cv_mean_testset(indices_and_params:dict):
     
     weights = wf.Weight(varity_data.data,varity_data.qip_dict)
     if weight_func == 'linear':
-        weight_func = weights.linear
+        weight_func_exec = weights.linear
     if weight_func == 'sigmoid':
-        weight_func = weights.sigmoid
-    if weight_func == 'direct':
-        raise
-    weights.fw_core_multiply_weight_vector_maker(varity_data.data, varity_data.qip_dict,indices_and_params,weight_func,True)
+        weight_func_exec = weights.sigmoid
+    if weight_func == 'direct': 
+        weight_func_exec = weights.direct
+    else: raise Exception("no weight function provided")
+    weights.fw_core_multiply_weight_vector_maker(varity_data.data, varity_data.qip_dict,indices_and_params,weight_func_exec,True)
     for train, test in kf.split(varity_r_data_unsplit_labelled):
         print(type(train))
         weights_train = weights.weights[train]
@@ -162,12 +163,14 @@ def core_targeted_CV(indices_and_params:dict):
     
     weights = wf.Weight(varity_data.data,varity_data.qip_dict)
     if weight_func == 'linear':
-        weight_func = weights.linear
+        weight_func_exec = weights.linear
     if weight_func == 'sigmoid':
-        weight_func = weights.sigmoid
+        weight_func_exec = weights.sigmoid
     if weight_func == 'direct':
-        raise
-    weights.fw_core_multiply_weight_vector_maker(varity_data.data, varity_data.qip_dict,indices_and_params,weight_func,True)
+        weight_func_exec= weights.direct
+    else: raise Exception("no weight function provided")
+
+    weights.fw_core_multiply_weight_vector_maker(varity_data.data, varity_data.qip_dict,indices_and_params,weight_func_exec,True)
 
     #get core set indices for splitting only core instances
     indices_core_set = core_set_finder(varity_data)
@@ -203,7 +206,7 @@ def core_targeted_CV(indices_and_params:dict):
 
 if __name__ == "__main__":
     varity_data = data.Dataloader_Varity("/Users/alirezarasoulzadeh/Desktop/reimplemented_varity/test_config.json")
-    hp_dict = hp_space_builder_varity(varity_data.qip_dict,'linear')
+    hp_dict = hp_space_builder_varity(varity_data.qip_dict,'direct')
     trials = Trials()
     hp_dict.update({"varity_data":varity_data})
     best = fmin(core_targeted_CV,

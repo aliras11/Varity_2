@@ -13,7 +13,7 @@ class Best_Model_Builder():
         '''path -> abs path to pickled trials object '''
         self.path = Path(path) 
         self.best_trial = self.get_best_hps()
-
+        #make a dataloader class instance 
 
     def get_best_hps(self):
         with open(self.path, "rb") as hp_tunedata:
@@ -23,7 +23,8 @@ class Best_Model_Builder():
 
     def get_weights(self,train_data,qip_dict):
         args_dict = self.best_trial['misc']['vals']
-        weights = wf.Weight.fw_core_multiply_weight_vector_maker(train_data,qip_dict, args_dict, rebalance=True)
+        weights = wf.Weight()
+        fw_core_multiply_weight_vector_maker(train_data,qip_dict, args_dict, rebalance=True)
         return weights
 
 if __name__ == "__main__":

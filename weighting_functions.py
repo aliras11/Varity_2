@@ -237,6 +237,7 @@ if __name__ == "__main__":
     from varity_testing import test_hp_space_builder
     args = test_hp_space_builder(varity_data.qip_dict,'direct')
     weights.fw_core_multiply_weight_vector_maker(varity_data.data, varity_data.qip_dict,args,weights.direct,False)
+    print(weights.direct)
     #args_dict = {}
     #weights.fw_core_multiply_weight_vector_maker(varity_data.data,varity_data.qip_dict,args_dict)
    # print(args_dict)
