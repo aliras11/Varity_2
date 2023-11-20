@@ -27,10 +27,14 @@ class Weight():
         weight = np.clip(weight,0,1)
         return weight
     
-    def direct(self,x,weight,throwaway):
+    def direct(self,x,weight,throwaway):#throwaway is needed to because we need a tuple as args in the .apply
         '''allows bayesian optmizing to directly choose the weight for each datasubet
         x -> pandas column/series, this argument is needed to make the .apply method to work even though it is not needed
         weight -> weight value assigned'''
+        weight = np.multiply(x,0)+weight
+        return weight
+
+    def all_ones(self,x,weight):
         weight = np.multiply(x,0)+weight
         return weight
 
@@ -52,6 +56,9 @@ class Weight():
                     
         if weight_function.__name__ == 'direct':
             return (args_dict[f'{data_subset}-weight'],0)
+
+        if weight_function.__name__ == 'all_ones':
+            return (1,)
 
 
 
@@ -236,8 +243,8 @@ if __name__ == "__main__":
     weights = Weight(varity_data.data,varity_data.qip_dict)
     from varity_testing import test_hp_space_builder
     args = test_hp_space_builder(varity_data.qip_dict,'direct')
-    weights.fw_core_multiply_weight_vector_maker(varity_data.data, varity_data.qip_dict,args,weights.direct,False)
-    print(weights.direct)
+    weights.fw_core_multiply_weight_vector_maker(varity_data.data, varity_data.qip_dict,args,weights.all_ones,False)
+    print(weights.weights)
     #args_dict = {}
     #weights.fw_core_multiply_weight_vector_maker(varity_data.data,varity_data.qip_dict,args_dict)
    # print(args_dict)
