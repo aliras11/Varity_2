@@ -76,6 +76,10 @@ def hp_space_builder_varity(qip_dict:dict, weight_function:str) -> dict:
     for data_group in qip_dict:
         for data_subset in qip_dict[data_group]:
             space.update({f'{data_subset}-weight':hp.uniform(f'{data_subset}-weight',0,1)})
+
+  if weight_function == "all_ones":
+      return space
+
   return space
 
 #needs to be called inside a fmin function
@@ -168,6 +172,8 @@ def core_targeted_CV(indices_and_params:dict):
         weight_func_exec = weights.sigmoid
     elif weight_func == 'direct':
         weight_func_exec= weights.direct
+    elif weight_func == 'all_ones':
+        weight_func_exec = weights.all_ones
     else: raise Exception("no weight function provided")
 
     weights.fw_core_multiply_weight_vector_maker(varity_data.data, varity_data.qip_dict,indices_and_params,weight_func_exec,True)

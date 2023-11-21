@@ -22,7 +22,7 @@ def main(action,config_path: str, tuning_rounds:str,weight_function:str) -> int:
         cp.mkdir(parents=True, exist_ok=True)
         varity_data = data.Dataloader_Varity(config_path)
         trials = Trials()
-        hp_dict = hp_tune.hp_space_builder_varity(varity_data.qip_dict,weight_function)
+        hp_dict = hp_tune.hp_space_builder_varity(varity_data.qip_dict,weight_function) #space builder takes in weight function as argument
         hp_dict.update({'varity_data':varity_data})
         print(type(hp_dict))
         print(hp_dict.keys())

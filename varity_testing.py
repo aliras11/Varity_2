@@ -38,6 +38,9 @@ def test_hp_space_builder(qip_dict: dict,weight_function: str) -> dict:
         for data_group in qip_dict:
             for data_subset in qip_dict[data_group]:
                 space.update({f'{data_subset}-weight':0.2})
+
+    if weight_function == 'all_ones':
+        return space
     return space
 
 #helper function that returns data subsets associated with a qip_dict,
