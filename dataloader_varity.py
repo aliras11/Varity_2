@@ -55,6 +55,44 @@ class Dataloader_Varity():
             config_dict = json.load(f)
         return config_dict
 
+class Validationloader_Varity():
+    '''load validation data for varity, verify that quality informative properties and features are
+    present'''
+
+    def __init__(self,json_file_path: str) -> None:
+
+        self.data_path: str = None
+        self.config_dict: dict = None
+        self.feature_set: set = set()
+        self._load_csv(json_file_path)
+
+    def _load_csv(self,json_file_path: str) -> None:
+        self.config_dict = self._load_config(json_file_path)
+        self.data_path = self.config_dict["train_data_path"]
+        self.feature_set = set(self.config_dict["list_features"])
+        #check for valid path
+        if self.data_path == "":
+            raise ValueError("empty training data path provided, please provide a valid path")
+
+        #read in data columns (first row of CSV) for comparisions later on
+        data = pd.read_csv(self.data_path,low_memory=False,index_col=False,nrows=1)
+        data_fields = set(data.columns)
+
+        #validate config file, by comparing features and qips with columns provided in training data 
+        if self.feature_set.issubset(data_fields):
+            data = pd.read_csv(self.data_path,low_memory=False,index_col=False)
+            self.data = data
+        elif (self.feature_set-data_fields):
+            raise ValueError(f"feature(s) in configuration file not present in data provided - {self.feature_set-data_fields} missing")
+
+    #note we do not validate the actual training CSV to ensure all the subsets mentioned in the QIP dictionary are present in the training data. 
+
+    def _load_config(self,json_file_path: str) -> dict:
+        with open(json_file_path,'r') as f:
+            config_dict = json.load(f)
+        return config_dict
+
 if __name__ == "__main__":
-    a = Dataloader_Varity("/Users/alirezarasoulzadeh/Desktop/reimplemented_varity/test_config.json")
+    a = Validationloader_Varity("validation_config.json")
     print(a.data)
+    print(a.feature_set)
